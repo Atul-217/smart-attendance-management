@@ -165,7 +165,7 @@
     }).join("");
     return `${pageHeading("ROSTER", "Manage students", "Review demo students or add a sample student record.")}
       <div class="grid two-col"><section class="panel"><div class="panel-heading"><div><h2>Student roster</h2><p>${data.students.length} records in local demo storage</p></div></div><div class="filters"><input class="filter-control" type="search" id="studentSearch" placeholder="Search roster" data-action="search-students"></div><div class="table-wrap"><table><thead><tr><th>Name</th><th>ID</th><th>Email</th><th>Program</th><th>Attendance</th><th>Manage</th></tr></thead><tbody id="studentRows">${rows}</tbody></table></div></section>
-      <section class="panel"><div class="panel-heading"><div><h2>Add student</h2><p>Use fictional/sample information only.</p></div></div><form id="studentForm"><div class="field"><label for="newStudentId">Student ID</label><input id="newStudentId" name="id" required pattern="[A-Za-z0-9-]{3,16}" placeholder="STU005"></div><div class="field"><label for="newStudentName">Full name</label><input id="newStudentName" name="name" required minlength="2" maxlength="70"></div><div class="field"><label for="newStudentEmail">Email</label><input id="newStudentEmail" name="email" type="email" required></div><div class="field"><label for="newStudentCourse">Course</label><input id="newStudentCourse" name="course" required value="B.Tech IT"></div><div class="field"><label for="newStudentYear">Year</label><select name="year"><option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option></select></div><button class="button full" type="submit">Add sample student</button></form></section></div>`;
+      <section class="panel"><div class="panel-heading"><div><h2>Add student</h2><p>Use fictional/sample information only.</p></div></div><form id="studentForm"><div class="field"><label for="newStudentId">Student ID</label><input id="newStudentId" name="id" required pattern="[A-Za-z0-9]{3,16}" placeholder="STU005"></div><div class="field"><label for="newStudentName">Full name</label><input id="newStudentName" name="name" required minlength="2" maxlength="70"></div><div class="field"><label for="newStudentEmail">Email</label><input id="newStudentEmail" name="email" type="email" required></div><div class="field"><label for="newStudentCourse">Course</label><input id="newStudentCourse" name="course" required value="B.Tech IT"></div><div class="field"><label for="newStudentYear">Year</label><select name="year"><option>1st Year</option><option>2nd Year</option><option>3rd Year</option><option>4th Year</option></select></div><button class="button full" type="submit">Add sample student</button></form></section></div>`;
   }
   function recordsPage() {
     if (!requireUser("admin")) return "";
@@ -393,12 +393,13 @@
     const form = event.target;
     const fields = new FormData(form);
     try {
-      if (form.id === "loginForm") {
+      const formId = form.getAttribute("id");
+      if (formId === "loginForm") {
         const user = Demo.Auth.signIn(data, fields.get("role"), fields.get("identifier"), fields.get("password"));
         page = "dashboard";
         render();
         toast(`Signed in as ${user.role}. This is a simulated demo session.`);
-      } else if (form.id === "checkinForm") {
+      } else if (formId === "checkinForm") {
         const locationAllowed = $("#useLocation").checked;
         if (locationAllowed && !browserLocation) throw new Error("Request location first or uncheck the optional location box.");
         const record = Demo.Attendance.checkIn(data, {
@@ -411,7 +412,7 @@
         browserLocation = null;
         render();
         toast(`Attendance recorded for ${record.subjectId} at ${record.time}.`);
-      } else if (form.id === "studentForm") {
+      } else if (formId === "studentForm") {
         const id = String(fields.get("id")).trim().toUpperCase();
         const name = String(fields.get("name")).trim();
         const email = String(fields.get("email")).trim();
@@ -424,7 +425,7 @@
         Demo.Storage.write(data);
         render();
         toast(`Sample student ${id} added.`);
-      } else if (form.id === "settingsForm") {
+      } else if (formId === "settingsForm") {
         const threshold = Number(fields.get("threshold"));
         const radius = Number(fields.get("radiusMeters"));
         const latitude = Number(fields.get("collegeLatitude"));
@@ -440,7 +441,7 @@
         Demo.Storage.write(data);
         render();
         toast("Verification settings saved.");
-      } else if (form.id === "sessionsForm") {
+      } else if (formId === "sessionsForm") {
         data.subjects.forEach((subject) => {
           const code = String(fields.get(`code-${subject.id}`)).trim().toUpperCase();
           const expiry = new Date(String(fields.get(`expiry-${subject.id}`)));
