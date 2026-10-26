@@ -1,0 +1,281 @@
+Project: Online Smart Attendance Management System — Netlify Ready
+
+Act as an expert web developer, Java programmer, UI/UX designer, and Object-Oriented Programming (OOP) subject expert.
+
+Build a complete, interactive, medium-level Online Smart Attendance Management System for a first-year B.Tech IT college project.
+
+The project must be student-friendly, visually attractive, easy to demonstrate to teachers, and designed for deployment on Netlify.
+
+1. Subject and Syllabus Requirements
+
+Subject: Object Oriented Techniques Using Java
+
+Cover all five units of the subject in the project.
+
+- Unit 1: Basics of Java Programming — variables, data types, operators, conditional statements, loops, methods, and basic program structure.
+- Unit 2: OOPs Features, Arrays and Lambda Expressions — classes, objects, encapsulation, inheritance, polymorphism, abstraction, arrays, and lambda expressions where appropriate.
+- Unit 3: Packages, Exception Handling and String Handling — modular packages, exception handling, input validation, and string processing.
+- Unit 4: Concurrency in Java and I/O Stream — multithreading concepts, concurrent attendance processing, file input/output, and safe handling of attendance data.
+- Unit 5: GUI Programming, Generics and Collections — graphical user interface concepts, generic classes or methods, ArrayList, HashMap, and other suitable Java collections.
+
+Include a separate CAPP/OOP Concepts Used section on the website or in the project documentation explaining where each concept is applied. Do not merely list the concepts; relate them to actual attendance system features.
+
+2. Required Technology Stack and Netlify Deployment
+
+Use the following technologies:
+
+- HTML5 for website structure.
+- CSS3 for responsive styling and animations.
+- JavaScript for frontend interactions and attendance simulation.
+- Java for demonstrating the required OOP concepts and for an optional backend implementation.
+- Browser localStorage for saving demo data between page refreshes.
+
+Important deployment requirement:
+
+The frontend must run directly on Netlify without requiring a Java server. Do not expect Netlify static hosting to execute Java backend code.
+
+Provide two clearly separated options:
+
+1. Working demo: HTML, CSS and JavaScript with localStorage, deployable directly to Netlify.
+2. Full Java version: Java backend with a suitable Java web framework and database, hosted separately if required, with the Netlify frontend connected to it through APIs.
+
+For the initial college demonstration, prioritize the first option and provide Java source files separately to demonstrate the five syllabus units.
+
+Do not claim that a Java backend, real face recognition, or secure authentication is working unless it has actually been implemented.
+
+3. User Roles and Login
+
+Only two types of users can access the website:
+
+Student
+
+- Student login.
+- View personal profile.
+- View attendance percentage and subject-wise attendance.
+- Mark attendance using the available verification methods.
+- View attendance history.
+- View present, absent and late records.
+- View a clear warning when attendance falls below 75%.
+
+Admin
+
+- Admin login.
+- View all registered students.
+- Add, edit and manage student records.
+- View daily and subject-wise attendance.
+- View attendance percentages.
+- Search and filter attendance records.
+- Correct attendance records with an audit note.
+- Export attendance reports as CSV.
+- View suspicious or rejected attendance attempts.
+
+Create separate student and admin dashboards with role-based navigation.
+
+For the demo, clearly label sample credentials and simulated authentication. Do not store real passwords or claim localStorage-based login is production-secure.
+
+4. Core Attendance Features
+
+Implement the following features:
+
+A. Attendance Check-in
+
+- Students can attempt to mark attendance.
+- Record student ID, date, time, subject, status and verification method.
+- Prevent duplicate attendance for the same student, subject and session.
+- Display a clear success or rejection message.
+- Allow the admin to view the attendance record immediately.
+
+B. Location Verification
+
+- Use the browser Geolocation API only after the student grants permission.
+- For a demo, allow the admin to configure a sample college location and permitted radius.
+- Show whether the student is within the permitted area when actual coordinates are available.
+- Handle permission denial and unavailable location gracefully.
+- Do not pretend that a simulated location is a verified real location.
+
+C. QR Code Attendance
+
+- Generate a QR code for a specific class or attendance session.
+- Allow students to scan a QR code using the device camera when supported, or enter a session code as a fallback.
+- Validate the session code and expiry time.
+- Prevent repeated check-ins for the same session.
+- Clearly distinguish simulated verification from real QR scanning.
+
+D. Face Recognition
+
+- Provide a face-verification interface for demonstration.
+- If actual face verification is implemented, use a suitable browser-compatible solution with explicit camera permission and consent.
+- Do not mark a student present merely because the camera opens or a face is detected.
+- Clearly label simulated face verification as a demo.
+- Never claim that the demo can reliably identify a person's identity without a genuine identity-verification implementation.
+
+E. Attendance Records
+
+- Show daily, weekly and monthly attendance.
+- Display subject-wise attendance percentages.
+- Include Present, Absent, Late and Rejected Attempt statuses.
+- Allow filtering by student, date, subject and status.
+- Show attendance statistics using simple charts or progress bars.
+
+F. Proxy Attendance Prevention
+
+- Detect duplicate check-in attempts.
+- Validate QR/session expiry.
+- Combine available location and session verification results.
+- Flag suspicious attempts for admin review.
+- If proxy attendance is confirmed by the configured verification rules, reject the check-in and mark the student absent for that session.
+- Record the reason for rejection.
+- Do not automatically accuse a student based only on a single failed location or camera check.
+- Clearly explain that a frontend-only demo cannot guarantee prevention of all proxy attendance.
+
+5. Additional Features
+
+Include these additional features:
+
+1. Attendance percentage calculator.
+2. Minimum attendance threshold configurable by the admin, default 75%.
+3. Low-attendance warning on the student dashboard.
+4. Search, sorting and filtering.
+5. CSV export of attendance records.
+6. Responsive design for mobile, tablet and desktop.
+7. Toast notifications and confirmation dialogs.
+8. Dashboard cards for total students, present today, absent today and attendance percentage.
+9. Date and time display.
+10. Sample student and attendance data.
+11. Reset demo data option for admin, with confirmation.
+12. Attendance audit history for admin corrections.
+13. Empty states, error messages and form validation.
+14. Basic accessibility, readable fonts and keyboard-friendly controls.
+
+6. User Interface and Design
+
+Create a professional college management dashboard.
+
+Design requirements:
+
+- Modern blue, white and light-grey theme.
+- Sidebar navigation for desktop.
+- Mobile-friendly navigation.
+- Separate student and admin dashboards.
+- Login page with role selection.
+- Summary cards, tables, search bars and attendance charts.
+- Clean forms and readable typography.
+- Loading indicators and helpful error messages.
+- Consistent spacing, shadows and rounded cards.
+- No unnecessary animations or clutter.
+
+Suggested pages:
+
+1. Login
+2. Student Dashboard
+3. Admin Dashboard
+4. Student Profile
+5. Mark Attendance
+6. Attendance History
+7. Manage Students
+8. Manage Attendance
+9. Reports and CSV Export
+10. Verification Settings
+11. About the Project / Java Concepts Used
+
+7. Java OOP Implementation
+
+Along with the website, provide a separate Java implementation demonstrating the syllabus.
+
+Suggested class structure:
+
+- User — base class.
+- Student — extends User.
+- Admin — extends User.
+- AttendanceRecord — stores attendance information.
+- AttendanceService — attendance business logic.
+- LocationVerifier — location validation.
+- QRCodeVerifier — QR/session validation.
+- ProxyDetectionService — suspicious-attempt rules.
+- ReportService — calculates percentages and generates reports.
+- FileStorageService — demonstrates Java I/O.
+- AttendanceManager — manages collections and attendance operations.
+
+Demonstrate:
+
+- Encapsulation using private fields and getters/setters.
+- Inheritance using Student and Admin.
+- Polymorphism using overridden methods or interfaces.
+- Abstraction using interfaces or abstract classes.
+- Exception handling for invalid attendance operations.
+- Arrays and collections for managing records.
+- Generics where useful.
+- Lambda expressions for filtering or sorting.
+- Multithreading or ExecutorService for a suitable concurrent-processing example.
+- File I/O for saving and reading attendance records.
+- Packages for separating models, services, utilities and application logic.
+
+Use suitable Java naming conventions and meaningful comments.
+
+The Java code must compile and be logically consistent. Explain which features are demonstrated in Java and which are implemented only in the JavaScript demo.
+
+8. Data Storage and Security
+
+For the Netlify demo:
+
+- Use localStorage for sample students, attendance records and demo settings.
+- Initialize sample data on first launch.
+- Preserve demo data after refresh.
+- Provide a reset option.
+- Validate all user inputs.
+
+Clearly explain the limitations:
+
+- localStorage is browser-specific and can be modified by users.
+- It is not secure storage for passwords or sensitive personal data.
+- Real multi-user synchronization requires a backend and shared database.
+- Real authentication, authorization and reliable proxy prevention require server-side validation.
+- Camera and location features require user permission and suitable browser support.
+
+Do not put secret API keys or real passwords in frontend code.
+
+9. Project Structure and Netlify Instructions
+
+Generate a clean project structure such as:
+
+attendance-management-system/
+
+- index.html
+- css/style.css
+- js/app.js
+- js/auth.js
+- js/attendance.js
+- js/storage.js
+- js/reports.js
+- assets/
+- java-source/
+- README.md
+
+You may use a different structure if it is more suitable, but ensure all file paths work.
+
+Requirements:
+
+- The website must run locally by opening or serving the HTML files as appropriate.
+- Avoid frameworks that require a build process unless necessary.
+- If using a library for QR codes or charts, explain the dependency and provide a fallback where practical.
+- Provide a Netlify-ready root directory and deployment steps.
+- Include a README with project overview, features, demo credentials, setup instructions, limitations and deployment instructions.
+- Make sure navigation, forms, filters, attendance calculations, reports and buttons actually work.
+
+10. Required Final Output
+
+Provide the project in the following order:
+
+1. Short project overview and architecture.
+2. Folder structure.
+3. Complete HTML, CSS and JavaScript source code, with filenames.
+4. Java source code for the five syllabus units.
+5. Sample login credentials for demo use.
+6. Sample student and attendance records.
+7. Instructions for testing all features.
+8. Step-by-step Netlify deployment guide.
+9. Explanation of how each of the five Java syllabus units is covered.
+10. Project limitations and possible future improvements.
+11. Viva questions and answers about the project and Java OOP concepts.
+
+Do not provide only a design mockup or pseudocode. Build a functional project with consistent file names, connected navigation and working interactions. If the entire project cannot fit in one response, generate it in clearly numbered parts without omitting required files. Ensure the frontend can be deployed to Netlify without a Java backend.
