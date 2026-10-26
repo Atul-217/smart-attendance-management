@@ -18,7 +18,7 @@ Cover all five units of the subject in the project.
 - Unit 4: Concurrency in Java and I/O Stream — multithreading concepts, concurrent attendance processing, file input/output, and safe handling of attendance data.
 - Unit 5: GUI Programming, Generics and Collections — graphical user interface concepts, generic classes or methods, ArrayList, HashMap, and other suitable Java collections.
 
-Include a separate CAPP/OOP Concepts Used section on the website or in the project documentation explaining where each concept is applied. Do not merely list the concepts; relate them to actual attendance system features.
+Include a separate Java OOP Concepts Used section on the website or in the project documentation explaining where each concept is applied. Do not merely list the concepts; relate them to actual attendance system features.
 
 2. Required Technology Stack and Netlify Deployment
 

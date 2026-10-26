@@ -66,7 +66,7 @@ Then visit `http://localhost:8000`. The server only serves static files; there i
 9. Admin **Reports & export**: filter the records and download the current result set as CSV.
 10. Admin **Verification settings**: configure attendance threshold, optional location enforcement, sample campus radius/coordinates, session codes, and expiry times.
 11. **Reset demo data** restores the original sample accounts and records after confirmation.
-12. **Java / CAPP lab** explains how the five course units are represented.
+12. **Java & OOP concepts** explains how the Java course units and object-oriented concepts are represented.
 13. Student dashboard **Attendance by period** shows today's, rolling 7-day, and rolling 30-day attendance percentages.
 
 ## Java demonstration

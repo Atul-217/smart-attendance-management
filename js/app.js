@@ -17,12 +17,12 @@
     { id: "records", label: "Manage attendance", icon: "▦", roles: ["admin"] },
     { id: "reports", label: "Reports & export", icon: "↗", roles: ["admin"] },
     { id: "settings", label: "Verification settings", icon: "⚙", roles: ["admin"] },
-    { id: "about", label: "Java / CAPP lab", icon: "⌘", roles: ["admin", "student"] }
+    { id: "about", label: "Java & OOP concepts", icon: "⌘", roles: ["admin", "student"] }
   ];
   const titles = {
     dashboard: "Dashboard", profile: "My profile", mark: "Mark attendance",
     history: "Attendance history", students: "Manage students", records: "Manage attendance",
-    reports: "Reports & export", settings: "Verification settings", about: "Java / CAPP lab"
+    reports: "Reports & export", settings: "Verification settings", about: "Java & OOP concepts"
   };
 
   function esc(value) {
@@ -228,7 +228,7 @@
       <p class="footer-note">The face-verification control is intentionally simulated and does not open a camera. The QR-style session code is entered manually; this project does not claim real QR scanning or identity verification.</p>`;
   }
   function aboutPage() {
-    return `${pageHeading("PROJECT LAB", "Java, OOP & CAPP concepts", "A practical connection between course concepts and attendance features.")}
+    return `${pageHeading("JAVA PROJECT", "Java & OOP concepts", "How Java programming and object-oriented concepts support attendance features.")}
       <div class="grid two-col"><section class="panel"><div class="panel-heading"><div><h2>Five Java syllabus units</h2><p>Java source is kept separately under java-source/.</p></div></div>
       <div class="audit-item"><strong>Unit 1 · Java programming basics</strong><p>AttendanceManager demonstrates variables, data types, loops, conditions, methods, and a runnable main method.</p></div>
       <div class="audit-item"><strong>Unit 2 · OOP, arrays, collections and lambdas</strong><p>User is an abstract base class; Student and Admin inherit and override role descriptions. Attendance records use lists/maps, and lambda expressions filter records.</p></div>
