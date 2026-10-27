@@ -14,7 +14,7 @@
   };
   const CAMPUS_LOCATION = {
     name: "NIET, Plot No. 19, Greater Noida",
-    address: "Plot No. 19, APJ Abdul Kalam Road, Knowledge Park III, Greater Noida, Uttar Pradesh 201306",
+    address: "Plot No. 19, Knowledge Park II, Greater Noida, Uttar Pradesh",
     latitude: 28.4627631,
     longitude: 77.4907584,
     radiusMeters: 500
@@ -120,6 +120,13 @@
         migratedLocation = true;
       }
       if (!data.settings.collegeName || !data.settings.collegeAddress) {
+        data.settings.collegeName = CAMPUS_LOCATION.name;
+        data.settings.collegeAddress = CAMPUS_LOCATION.address;
+        migratedLocation = true;
+      }
+      if (data.settings.collegeAddress.includes("Knowledge Park III") &&
+          data.settings.collegeLatitude === CAMPUS_LOCATION.latitude &&
+          data.settings.collegeLongitude === CAMPUS_LOCATION.longitude) {
         data.settings.collegeName = CAMPUS_LOCATION.name;
         data.settings.collegeAddress = CAMPUS_LOCATION.address;
         migratedLocation = true;
