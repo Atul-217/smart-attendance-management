@@ -11,6 +11,7 @@
   let cameraTimer = null;
   let cameraGeneration = 0;
   let scanner = null;
+  let scanCanvas = null;
   let toastTimer;
   const filters = { history: {}, records: {}, report: {} };
   const navItems = [
@@ -133,9 +134,10 @@
       <form id="checkinForm"><div class="field"><label for="checkSubject">Subject</label><select id="checkSubject" name="subjectId" required>${subjectOptions()}</select></div>
       <div class="field"><label for="sessionCode">Session code</label><input id="sessionCode" name="code" autocomplete="off" placeholder="Enter the code from the class session" required maxlength="20"></div>
       <div class="grid two-col media-tools">
-        <div class="panel media-panel"><h3>Class session QR</h3><div id="studentQr" class="qr-code" role="img" aria-label="QR code for the selected attendance session"></div><p id="studentQrStatus" class="footer-note">QR code contains the demo subject, session code, and expiry.</p><button type="button" class="button secondary small" data-action="download-qr" data-qr-target="studentQr">Download QR</button> <button type="button" class="button secondary small" data-action="scan-qr">Scan instructor QR</button></div>
+        <div class="panel media-panel"><h3>Class session QR preview</h3><div id="studentQr" class="qr-code" role="img" aria-label="QR code for the selected attendance session"></div><p id="studentQrStatus" class="footer-note">This is the current demo QR for the selected subject.</p><button type="button" class="button secondary small" data-action="download-qr" data-qr-target="studentQr">Download class QR</button></div>
         <div class="panel media-panel"><h3>Face camera demo</h3><p class="muted">Camera preview only. This does not recognize a face or confirm identity.</p><video id="studentCamera" class="camera-preview" autoplay muted playsinline hidden></video><p id="cameraStatus" class="footer-note">Camera is off. No image is recorded or saved.</p><button type="button" class="button secondary small" data-action="face-camera">Start camera demo</button><button type="button" class="button secondary small" data-action="stop-camera" hidden>Stop camera</button></div>
       </div>
+      <div class="panel scanner-panel"><h3>Scan instructor's class QR code</h3><p class="muted">Allow camera access to scan the QR code displayed by your instructor. The scanner uses your browser's QR API or a JavaScript fallback.</p><video id="scannerCamera" class="camera-preview" autoplay muted playsinline hidden></video><button type="button" class="button secondary small" data-action="scan-qr">Open QR scanner</button><p id="scannerStatus" class="footer-note" role="status">Scanner is off. Camera access starts only when you choose Open QR scanner. You can enter the session code manually if needed.</p></div>
       <div class="check-field"><input type="checkbox" id="useLocation"><label for="useLocation">Request my browser location and include an approximate campus-radius check (optional, requires permission).</label></div>
       <button type="button" class="button secondary small" data-action="location">Check my location</button><span id="locationResult" class="muted" style="margin-left:8px;font-size:10px">${browserLocation ? "Location available for this check-in." : "No location check performed."}</span>
       ${data.settings.requireLocation ? '<div class="notice warning" style="margin:12px 0">Location check is required by the demo administrator. Use “Check my location” and enable the location option above.</div>' : ""}
@@ -449,8 +451,8 @@
     }
     stopCamera();
     const requestId = cameraGeneration;
-    const video = $("#studentCamera");
-    const status = $("#cameraStatus");
+    const video = mode === "scan" ? $("#scannerCamera") : $("#studentCamera");
+    const status = mode === "scan" ? $("#scannerStatus") : $("#cameraStatus");
     if (!video || !status) throw new Error("Camera preview is only available on the student check-in page.");
     status.textContent = "Requesting camera permission…";
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -482,17 +484,22 @@
       cameraStream = null;
     }
     scanner = null;
+    scanCanvas = null;
     cameraMode = null;
-    const video = $("#studentCamera");
-    if (video) {
-      video.pause();
-      video.srcObject = null;
-      video.hidden = true;
-    }
+    ["studentCamera", "scannerCamera"].forEach((id) => {
+      const video = $(`#${id}`);
+      if (video) {
+        video.pause();
+        video.srcObject = null;
+        video.hidden = true;
+      }
+    });
     const status = $("#cameraStatus");
     if (status) status.textContent = "Camera is off. No image is recorded or saved.";
     const stopButton = $('[data-action="stop-camera"]');
     if (stopButton) stopButton.hidden = true;
+    const scannerStatus = $("#scannerStatus");
+    if (scannerStatus) scannerStatus.textContent = "Scanner is off. Camera access starts only when you choose Open QR scanner. You can enter the session code manually if needed.";
   }
   async function startCameraDemo() {
     try {
@@ -503,15 +510,20 @@
     }
   }
   async function startQrScanner() {
-    if (typeof window.BarcodeDetector !== "function") {
+    if (typeof window.BarcodeDetector !== "function" && typeof window.jsQR !== "function") {
       toast("This browser does not support QR scanning. Enter the session code manually.", true);
       return;
     }
     try {
-      const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
+      const detector = typeof window.BarcodeDetector === "function"
+        ? new window.BarcodeDetector({ formats: ["qr_code"] })
+        : null;
       await startCamera("scan");
-      scanner = detector;
+      scanner = detector || window.jsQR;
+      scanCanvas = document.createElement("canvas");
       scanQrFrame();
+      const status = $("#scannerStatus");
+      if (status) status.textContent = "Scanner is active. Point your camera at the instructor's class QR code.";
     } catch (error) {
       stopCamera();
       toast(`Could not start QR scanning: ${error.message}. Enter the code manually.`, true);
@@ -519,18 +531,28 @@
   }
   async function scanQrFrame() {
     if (!cameraStream || cameraMode !== "scan" || !scanner) return;
-    const video = $("#studentCamera");
+    const video = $("#scannerCamera");
     if (video && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
       try {
+      if (typeof scanner.detect === "function") {
         const codes = await scanner.detect(video);
         if (codes.length && applyScannedSession(codes[0].rawValue)) return;
-      } catch (error) {
-        stopCamera();
-        toast(`QR scan failed: ${error.message}. Enter the code manually.`, true);
-        return;
+      } else {
+        const context = scanCanvas.getContext("2d", { willReadFrequently: true });
+        scanCanvas.width = video.videoWidth;
+        scanCanvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, scanCanvas.width, scanCanvas.height);
+        const pixels = context.getImageData(0, 0, scanCanvas.width, scanCanvas.height);
+        const code = scanner(pixels.data, pixels.width, pixels.height, { inversionAttempts: "dontInvert" });
+        if (code && applyScannedSession(code.data)) return;
       }
+    } catch (error) {
+      stopCamera();
+      toast(`QR scan failed: ${error.message}. Enter the code manually.`, true);
+      return;
     }
-    cameraTimer = setTimeout(scanQrFrame, 250);
+    }
+    if (cameraStream && cameraMode === "scan") cameraTimer = setTimeout(scanQrFrame, 250);
   }
   function applyScannedSession(rawValue) {
     let payload;

@@ -58,7 +58,7 @@ Then visit `http://localhost:8000`. The server only serves static files; there i
 1. Sign in as admin or a student using the demo credentials.
 2. Admin dashboard: inspect the roster totals, today's check-ins, attendance average, students below threshold, and any rejected attempts.
 3. Student dashboard/profile: inspect overall and subject-wise attendance, low-attendance warnings, profile, and records.
-4. Admins can display a generated QR for a configured active session in **Verification settings**. A student can scan it from **Mark attendance** on browsers that provide `BarcodeDetector`, or enter the visible class code (`JAVA75`, `DATA82`, or `MATH90`) manually. Codes can be changed by the admin. Each student can check in once per subject/session/date; invalid codes and duplicates are recorded for review.
+4. Admins can display a generated QR for a configured active session in **Verification settings**. On the student **Mark attendance** page, select **Open QR scanner** and grant camera permission to scan the instructor's QR. It uses the native `BarcodeDetector` API when available and falls back to jsQR on browsers without it. Enter the visible class code (`JAVA75`, `DATA82`, or `MATH90`) manually if camera scanning is unavailable. Codes can be changed by the admin. Each student can check in once per subject/session/date; invalid codes and duplicates are recorded for review.
 5. Optional location: select the location option, choose **Check my location**, and grant permission. The check uses a configured sample campus point/radius; coordinates are not secure proof of identity or presence.
 6. **Face camera demo** asks for camera permission only after the student clicks Start. It displays a live preview only; it does not detect, recognize, or identify faces, and does not record or save video. Stop the camera when finished.
 7. Admin **Manage students**: search, add, and edit fictional student records.
@@ -134,6 +134,6 @@ If GitHub requests authorization, finish it in the local browser sign-in flow or
 - Location is permission-gated and approximate. A browser location can be unavailable or spoofed.
 - Face recognition/identity matching is not implemented. The optional camera preview does not analyze or save images.
 - Session codes and generated QR payloads are demo values, not signed or encrypted credentials. QR codes improve check-in convenience, not security.
-- QR generation uses QRCode.js from cdnjs (MIT license); QR camera scanning uses the browser `BarcodeDetector` API where supported. Internet access is needed for the QR generator script; unsupported scanning browsers can still enter the session code. The optional preview-only camera demo is not face recognition.
+- QR generation uses QRCode.js from cdnjs and camera scanning falls back to jsQR from jsDelivr (both MIT licensed); native `BarcodeDetector` is preferred when available. Internet access is needed to load these libraries; manual session-code entry remains available. The optional preview-only camera demo is not face recognition.
 - The Java classes illustrate OOP/course concepts; they are not connected to the browser app.
 - Future work could add a secured Java API, managed database, server-issued expiring QR tokens, reviewed camera-based identity verification with explicit consent, and server-side audit logging.
