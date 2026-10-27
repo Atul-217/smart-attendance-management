@@ -41,7 +41,7 @@ The deployable application is the HTML/CSS/vanilla-JavaScript frontend. Its Java
 | Admin | `admin@demo.edu` | `demo123` |
 | Student | `STU001`, `STU002`, `STU003`, or `STU004` | `demo123` |
 
-The credentials are intentionally visible sample data, not secure authentication. The initial roster includes Aarav Mehta, Diya Sharma, Kabir Patel, and Sara Khan. Sample class history is generated locally on first launch.
+The credentials are intentionally visible sample data, not secure authentication. The initial roster maps STU001–STU004 to Atul, Ayush, Brijesh, and Karishma. Existing browser demo data is updated from the previous sample names automatically; other student edits are preserved. Sample class history is generated locally on first launch.
 
 ## Run locally
 
@@ -58,13 +58,13 @@ Then visit `http://localhost:8000`. The server only serves static files; there i
 1. Sign in as admin or a student using the demo credentials.
 2. Admin dashboard: inspect the roster totals, today's check-ins, attendance average, students below threshold, and any rejected attempts.
 3. Student dashboard/profile: inspect overall and subject-wise attendance, low-attendance warnings, profile, and records.
-4. Mark attendance as a student using the visible class code: `JAVA75`, `DATA82`, or `MATH90`. Codes can be changed by the admin in **Verification settings**. Each student can check in once per subject/session/date; invalid codes and duplicates are recorded for review.
+4. Admins can display a generated QR for a configured active session in **Verification settings**. A student can scan it from **Mark attendance** on browsers that provide `BarcodeDetector`, or enter the visible class code (`JAVA75`, `DATA82`, or `MATH90`) manually. Codes can be changed by the admin. Each student can check in once per subject/session/date; invalid codes and duplicates are recorded for review.
 5. Optional location: select the location option, choose **Check my location**, and grant permission. The check uses a configured sample campus point/radius; coordinates are not secure proof of identity or presence.
-6. The face-verification checkbox only adds a clearly labeled simulation marker. It does not access a camera, detect a face, or identify a person.
+6. **Face camera demo** asks for camera permission only after the student clicks Start. It displays a live preview only; it does not detect, recognize, or identify faces, and does not record or save video. Stop the camera when finished.
 7. Admin **Manage students**: search, add, and edit fictional student records.
 8. Admin **Manage attendance**: filter records, correct a status with a required audit note, and review audit entries and rejected attempts.
 9. Admin **Reports & export**: filter the records and download the current result set as CSV.
-10. Admin **Verification settings**: configure attendance threshold, optional location enforcement, sample campus radius/coordinates, session codes, and expiry times.
+10. Admin **Verification settings**: configure attendance threshold, optional location enforcement, sample campus radius/coordinates, session codes/expiry times, and share the generated session QR.
 11. **Reset demo data** restores the original sample accounts and records after confirmation.
 12. **Java & OOP concepts** explains how the Java course units and object-oriented concepts are represented.
 13. Student dashboard **Attendance by period** shows today's, rolling 7-day, and rolling 30-day attendance percentages.
@@ -132,7 +132,8 @@ If GitHub requests authorization, finish it in the local browser sign-in flow or
 - `localStorage` is browser-local, user-editable, and not secure for passwords or sensitive information. Data does not synchronize across users or devices.
 - Production authentication, authorization, shared database storage, trusted audit records, and reliable anti-proxy controls require a server-side application and database.
 - Location is permission-gated and approximate. A browser location can be unavailable or spoofed.
-- Face verification is not implemented. No camera is opened and no face is recognized.
-- Session codes are displayed for easy testing and are not signed, encrypted, or equivalent to real QR scanning.
+- Face recognition/identity matching is not implemented. The optional camera preview does not analyze or save images.
+- Session codes and generated QR payloads are demo values, not signed or encrypted credentials. QR codes improve check-in convenience, not security.
+- QR generation uses QRCode.js from cdnjs (MIT license); QR camera scanning uses the browser `BarcodeDetector` API where supported. Internet access is needed for the QR generator script; unsupported scanning browsers can still enter the session code. The optional preview-only camera demo is not face recognition.
 - The Java classes illustrate OOP/course concepts; they are not connected to the browser app.
 - Future work could add a secured Java API, managed database, server-issued expiring QR tokens, reviewed camera-based identity verification with explicit consent, and server-side audit logging.

@@ -104,6 +104,7 @@ C. QR Code Attendance
 D. Face Recognition
 
 - Provide a face-verification interface for demonstration.
+- For the demonstration, camera preview may be used only after explicit user action and permission; do not identify people or save images.
 - If actual face verification is implemented, use a suitable browser-compatible solution with explicit camera permission and consent.
 - Do not mark a student present merely because the camera opens or a face is detected.
 - Clearly label simulated face verification as a demo.

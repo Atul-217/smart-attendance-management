@@ -34,8 +34,10 @@ public final class AttendanceManager {
 
     public static void main(String[] args) throws Exception {
         Student[] studentArray = {
-                new Student("STU001", "Aarav Mehta", "aarav@demo.edu", "B.Tech IT", 1),
-                new Student("STU002", "Diya Sharma", "diya@demo.edu", "B.Tech IT", 1)
+                new Student("STU001", "Atul", "atul@demo.edu", "B.Tech IT", 1),
+                new Student("STU002", "Ayush", "ayush@demo.edu", "B.Tech IT", 1),
+                new Student("STU003", "Brijesh", "brijesh@demo.edu", "B.Tech IT", 1),
+                new Student("STU004", "Karishma", "karishma@demo.edu", "B.Tech IT", 1)
         };
         Admin admin = new Admin("ADMIN", "Demo Administrator", "admin@demo.edu", "IT");
         List<User> users = new ArrayList<>(Arrays.asList(studentArray));
@@ -56,7 +58,7 @@ public final class AttendanceManager {
 
         List<AttendanceRecord> records = attendanceService.snapshot();
         ReportService reportService = new ReportService();
-        System.out.printf("Aarav attendance: %.1f%%%n",
+        System.out.printf("%s attendance: %.1f%%%n", studentArray[0].getName(),
                 reportService.attendancePercentage(records, studentArray[0].getId()));
         System.out.println("First record count: " + firstItems(records, 1).size());
 

@@ -6,6 +6,12 @@
     { id: "DSA102", name: "Data Structures", code: "DSA102" },
     { id: "MATH103", name: "Discrete Mathematics", code: "MATH103" }
   ];
+  const SAMPLE_NAMES = {
+    STU001: { previousName: "Aarav Mehta", name: "Atul", previousEmail: "aarav@demo.edu", email: "atul@demo.edu" },
+    STU002: { previousName: "Diya Sharma", name: "Ayush", previousEmail: "diya@demo.edu", email: "ayush@demo.edu" },
+    STU003: { previousName: "Kabir Patel", name: "Brijesh", previousEmail: "kabir@demo.edu", email: "brijesh@demo.edu" },
+    STU004: { previousName: "Sara Khan", name: "Karishma", previousEmail: "sara@demo.edu", email: "karishma@demo.edu" }
+  };
 
   function localDate(date = new Date()) {
     const offset = date.getTimezoneOffset();
@@ -13,10 +19,10 @@
   }
   function makeSeed() {
     const students = [
-      { id: "STU001", name: "Aarav Mehta", email: "aarav@demo.edu", course: "B.Tech IT", year: "1st Year" },
-      { id: "STU002", name: "Diya Sharma", email: "diya@demo.edu", course: "B.Tech IT", year: "1st Year" },
-      { id: "STU003", name: "Kabir Patel", email: "kabir@demo.edu", course: "B.Tech IT", year: "1st Year" },
-      { id: "STU004", name: "Sara Khan", email: "sara@demo.edu", course: "B.Tech IT", year: "1st Year" }
+      { id: "STU001", name: "Atul", email: "atul@demo.edu", course: "B.Tech IT", year: "1st Year" },
+      { id: "STU002", name: "Ayush", email: "ayush@demo.edu", course: "B.Tech IT", year: "1st Year" },
+      { id: "STU003", name: "Brijesh", email: "brijesh@demo.edu", course: "B.Tech IT", year: "1st Year" },
+      { id: "STU004", name: "Karishma", email: "karishma@demo.edu", course: "B.Tech IT", year: "1st Year" }
     ];
     const records = [];
     const today = new Date();
@@ -87,6 +93,17 @@
       data.audit = Array.isArray(data.audit) ? data.audit : [];
       data.attempts = Array.isArray(data.attempts) ? data.attempts : [];
       data.settings.sessions = data.settings.sessions || {};
+      let migratedNames = false;
+      data.students.forEach((student) => {
+        const sample = SAMPLE_NAMES[student.id];
+        if (sample && student.name === sample.previousName) {
+          student.name = sample.name;
+          if (student.email === sample.previousEmail) student.email = sample.email;
+          if (data.currentUser && data.currentUser.id === student.id) data.currentUser.name = sample.name;
+          migratedNames = true;
+        }
+      });
+      if (migratedNames) write(data);
       return data;
     } catch (error) {
       if (error instanceof SyntaxError) throw new Error("Saved demo data could not be read. Clear this site's storage to start a fresh demo.");

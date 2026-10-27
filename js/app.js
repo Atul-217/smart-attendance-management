@@ -6,6 +6,11 @@
   let data;
   let page = "dashboard";
   let browserLocation = null;
+  let cameraStream = null;
+  let cameraMode = null;
+  let cameraTimer = null;
+  let cameraGeneration = 0;
+  let scanner = null;
   let toastTimer;
   const filters = { history: {}, records: {}, report: {} };
   const navItems = [
@@ -123,20 +128,21 @@
   function markPage() {
     if (!requireUser("student")) return "";
     const student = Demo.Attendance.studentFor(data, data.currentUser.id);
-    const subjectOptions = data.subjects.map((s) => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("");
     return `${pageHeading("CHECK-IN", "Mark attendance", "Enter the class session code provided by your instructor.")}
       <div class="grid two-col"><section class="panel"><div class="panel-heading"><div><h2>Class check-in</h2><p>Signed in as ${esc(student.name)} · ${esc(student.id)}</p></div><span class="badge">Demo mode</span></div>
-      <form id="checkinForm"><div class="field"><label for="checkSubject">Subject</label><select id="checkSubject" name="subjectId" required>${subjectOptions}</select></div>
+      <form id="checkinForm"><div class="field"><label for="checkSubject">Subject</label><select id="checkSubject" name="subjectId" required>${subjectOptions()}</select></div>
       <div class="field"><label for="sessionCode">Session code</label><input id="sessionCode" name="code" autocomplete="off" placeholder="Enter the code from the class session" required maxlength="20"></div>
-      <div class="session-code"><small>DEMO CLASS CODES · NOT SECRET</small>${data.subjects.map((s) => `${esc(s.id)}: ${esc(data.settings.sessions[s.id] ? data.settings.sessions[s.id].code : "Not set")}`).join(" &nbsp; · &nbsp; ")}</div>
+      <div class="grid two-col media-tools">
+        <div class="panel media-panel"><h3>Class session QR</h3><div id="studentQr" class="qr-code" role="img" aria-label="QR code for the selected attendance session"></div><p id="studentQrStatus" class="footer-note">QR code contains the demo subject, session code, and expiry.</p><button type="button" class="button secondary small" data-action="download-qr" data-qr-target="studentQr">Download QR</button> <button type="button" class="button secondary small" data-action="scan-qr">Scan instructor QR</button></div>
+        <div class="panel media-panel"><h3>Face camera demo</h3><p class="muted">Camera preview only. This does not recognize a face or confirm identity.</p><video id="studentCamera" class="camera-preview" autoplay muted playsinline hidden></video><p id="cameraStatus" class="footer-note">Camera is off. No image is recorded or saved.</p><button type="button" class="button secondary small" data-action="face-camera">Start camera demo</button><button type="button" class="button secondary small" data-action="stop-camera" hidden>Stop camera</button></div>
+      </div>
       <div class="check-field"><input type="checkbox" id="useLocation"><label for="useLocation">Request my browser location and include an approximate campus-radius check (optional, requires permission).</label></div>
       <button type="button" class="button secondary small" data-action="location">Check my location</button><span id="locationResult" class="muted" style="margin-left:8px;font-size:10px">${browserLocation ? "Location available for this check-in." : "No location check performed."}</span>
-      <div class="check-field"><input type="checkbox" name="faceConsent" id="faceConsent"><label for="faceConsent">I consent to include a <strong>simulated face-verification demo</strong> marker. This does not use the camera or identify anyone.</label></div>
       ${data.settings.requireLocation ? '<div class="notice warning" style="margin:12px 0">Location check is required by the demo administrator. Use “Check my location” and enable the location option above.</div>' : ""}
       <button class="button full" type="submit">Submit attendance</button></form>
       <p class="footer-note">A valid check-in stores a demo record in this browser. Duplicate and invalid attempts are logged for admin review. This frontend cannot guarantee prevention of proxy attendance.</p></section>
       <aside class="panel"><div class="panel-heading"><div><h2>Session rules</h2><p>Current demo validation</p></div></div><div class="notice">Session codes expire at the configured time. Attendance is recorded once per student, subject and session date.</div>
-      <div class="footer-note"><strong>Location:</strong> ${data.settings.requireLocation ? "required by administrator" : "optional"} · allowed radius ${esc(data.settings.radiusMeters)} m.<br><strong>Face verification:</strong> simulated consent marker only; no camera access or identity check.</div>
+      <div class="footer-note"><strong>Location:</strong> ${data.settings.requireLocation ? "required by administrator" : "optional"} · allowed radius ${esc(data.settings.radiusMeters)} m.<br><strong>Face feature:</strong> camera preview only; not face recognition.</div>
       <div class="notice warning" style="margin-top:15px">Location checks are approximate and browser coordinates can be spoofed. They are not secure proof of presence.</div></aside></div>`;
   }
   function historyPage() {
@@ -224,8 +230,9 @@
         const session = data.settings.sessions[subject.id] || { code: "", expiresAt: new Date().toISOString() };
         return `<div class="field-grid"><div class="field"><label for="code-${esc(subject.id)}">${esc(subject.name)} code</label><input id="code-${esc(subject.id)}" name="code-${esc(subject.id)}" required maxlength="20" value="${esc(session.code)}"></div><div class="field"><label for="expiry-${esc(subject.id)}">Expiry</label><input id="expiry-${esc(subject.id)}" name="expiry-${esc(subject.id)}" type="datetime-local" required value="${esc(localInputTime(session.expiresAt))}"></div></div>`;
       }).join("")}<button class="button" type="submit">Save session codes</button></form>
+      <div class="session-qr-panel"><div class="field"><label for="settingsQrSubject">Share a class QR code</label><select id="settingsQrSubject">${subjectOptions()}</select></div><div id="settingsQr" class="qr-code" role="img" aria-label="QR code for the selected attendance session"></div><p id="settingsQrStatus" class="footer-note">Students can scan this code from their check-in screen when QR scanning is supported.</p><button type="button" class="button secondary small" data-action="download-qr" data-qr-target="settingsQr">Download QR</button></div>
       <hr style="border:0;border-top:1px solid var(--line);margin:20px 0"><div class="panel-heading"><div><h2>Reset browser demo</h2><p>Restore sample students, records, codes, and settings.</p></div></div><button class="button danger" data-action="reset">Reset demo data</button></section></div>
-      <p class="footer-note">The face-verification control is intentionally simulated and does not open a camera. The QR-style session code is entered manually; this project does not claim real QR scanning or identity verification.</p>`;
+      <p class="footer-note">QR scanning and camera preview require a supported browser and permission. The camera feature is a preview-only demo; it does not recognize faces or verify identity.</p>`;
   }
   function aboutPage() {
     return `${pageHeading("JAVA PROJECT", "Java & OOP concepts", "How Java programming and object-oriented concepts support attendance features.")}
@@ -237,7 +244,7 @@
       <div class="audit-item"><strong>Unit 5 · GUI concepts, generics and collections</strong><p>This JavaScript browser interface demonstrates GUI concepts. Java uses generic collection APIs and a reusable generic filtering method; there is no Java GUI/backend in this demo.</p></div></section>
       <section class="panel"><div class="panel-heading"><div><h2>Architecture</h2><p>Static Netlify frontend + independent Java console demonstration</p></div></div><div class="notice">HTML builds the role-based UI, CSS provides responsive layouts, and vanilla JavaScript modules handle simulated authentication, validation, attendance, reporting, and localStorage persistence. Java source demonstrates OOP and syllabus topics; it is not a deployed backend.</div>
       <div class="notice warning" style="margin-top:14px"><strong>Security & privacy:</strong> demo passwords and data are fictional. localStorage can be inspected or modified. Real authentication, multi-user synchronization, reliable anti-proxy controls, secure audit trails, and sensitive-data protection require a server and database.</div>
-      <div class="notice" style="margin-top:14px">Location uses browser permission only when explicitly requested. Face verification is a consent-labeled simulation; the demo does not use camera access, recognize faces, or verify identity. Manual session codes are not cryptographic QR tokens.</div></section></div>
+      <div class="notice" style="margin-top:14px">Location uses browser permission only when explicitly requested. The camera feature is a student-started preview only; it does not recognize faces, verify identity, or save video. QR sessions are demo codes rather than secure tokens.</div></section></div>
       <section class="panel" style="margin-top:16px"><div class="panel-heading"><div><h2>Viva practice</h2><p>Short project-linked questions and answers</p></div></div>
       <div class="audit-item"><strong>Why is Student derived from User?</strong><p>Shared identity behavior is modeled once in an abstract base type; student-specific details remain in Student.</p></div>
       <div class="audit-item"><strong>How is attendance calculated?</strong><p>Present and late records count as attended; absent records count in the denominator and rejected attempts are excluded.</p></div>
@@ -273,8 +280,47 @@
     }
   }
   function render() {
+    stopCamera();
     if (!data.currentUser) root.innerHTML = loginPage();
     else root.innerHTML = shellPage();
+    if (page === "mark") refreshQrCode("studentQr", "studentQrStatus", $("#checkSubject")?.value);
+    if (page === "settings") refreshQrCode("settingsQr", "settingsQrStatus", $("#settingsQrSubject")?.value);
+  }
+  function sessionPayload(subjectId) {
+    const session = data.settings.sessions[subjectId];
+    if (!session || !session.code || !session.expiresAt || Date.now() >= new Date(session.expiresAt).getTime()) return null;
+    return {
+      app: "attendly-demo",
+      subjectId,
+      code: session.code,
+      expiresAt: session.expiresAt
+    };
+  }
+  function refreshQrCode(containerId, statusId, subjectId) {
+    const container = $(`#${containerId}`);
+    const status = $(`#${statusId}`);
+    if (!container || !status) return;
+    container.replaceChildren();
+    const payload = sessionPayload(subjectId);
+    if (!payload) {
+      status.textContent = "No active session for this subject. Configure a future expiry and session code in Verification settings.";
+      return;
+    }
+    if (typeof window.QRCode !== "function") {
+      status.textContent = "QR generator could not load. Use the visible manual session code instead.";
+      return;
+    }
+    try {
+      new window.QRCode(container, {
+        text: JSON.stringify(payload),
+        width: 176,
+        height: 176,
+        correctLevel: window.QRCode.CorrectLevel.M
+      });
+      status.textContent = `QR for ${Demo.Attendance.subjectFor(data, subjectId).name}. It contains the demo session code and expiry; it is not a secure token.`;
+    } catch (error) {
+      status.textContent = `QR generation failed: ${error.message}. Use the manual session code.`;
+    }
   }
   function readFilters(prefix) {
     filters[prefix] = {
@@ -291,6 +337,7 @@
       const target = nav.dataset.go;
       const item = navItems.find((candidate) => candidate.id === target);
       if (item && item.roles.includes(data.currentUser.role)) {
+        stopCamera();
         page = target;
         browserLocation = null;
         render();
@@ -309,6 +356,14 @@
       catch (error) { toast(error.message, true); }
     } else if (action === "location") {
       requestLocation();
+    } else if (action === "scan-qr") {
+      startQrScanner();
+    } else if (action === "download-qr") {
+      downloadQrCode(button.dataset.qrTarget);
+    } else if (action === "face-camera") {
+      startCameraDemo();
+    } else if (action === "stop-camera") {
+      stopCamera();
     } else if (action === "filter-history") {
       readFilters("history");
       $("#historyResults").innerHTML = attendanceTable(filteredRecords("history"), data.currentUser.role === "admin");
@@ -388,6 +443,137 @@
       toast(status.textContent, true);
     }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 });
   }
+  async function startCamera(mode) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error("Camera access is not available in this browser. Use the manual session code instead.");
+    }
+    stopCamera();
+    const requestId = cameraGeneration;
+    const video = $("#studentCamera");
+    const status = $("#cameraStatus");
+    if (!video || !status) throw new Error("Camera preview is only available on the student check-in page.");
+    status.textContent = "Requesting camera permission…";
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: mode === "scan" ? "environment" : "user" },
+      audio: false
+    });
+    if (requestId !== cameraGeneration) {
+      stream.getTracks().forEach((track) => track.stop());
+      throw new Error("Camera request was canceled because the page changed.");
+    }
+    cameraStream = stream;
+    cameraMode = mode;
+    video.srcObject = cameraStream;
+    video.hidden = false;
+    const stopButton = $('[data-action="stop-camera"]');
+    if (stopButton) stopButton.hidden = false;
+    status.textContent = mode === "face-demo"
+      ? "Camera preview is active. No face is identified, analyzed, or saved."
+      : "Camera is ready. Point it at an Attendly class QR code.";
+  }
+  function stopCamera() {
+    cameraGeneration += 1;
+    if (cameraTimer !== null) {
+      clearTimeout(cameraTimer);
+      cameraTimer = null;
+    }
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((track) => track.stop());
+      cameraStream = null;
+    }
+    scanner = null;
+    cameraMode = null;
+    const video = $("#studentCamera");
+    if (video) {
+      video.pause();
+      video.srcObject = null;
+      video.hidden = true;
+    }
+    const status = $("#cameraStatus");
+    if (status) status.textContent = "Camera is off. No image is recorded or saved.";
+    const stopButton = $('[data-action="stop-camera"]');
+    if (stopButton) stopButton.hidden = true;
+  }
+  async function startCameraDemo() {
+    try {
+      await startCamera("face-demo");
+      toast("Camera demo started. It previews video only and does not recognize faces.");
+    } catch (error) {
+      toast(error.message, true);
+    }
+  }
+  async function startQrScanner() {
+    if (typeof window.BarcodeDetector !== "function") {
+      toast("This browser does not support QR scanning. Enter the session code manually.", true);
+      return;
+    }
+    try {
+      const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
+      await startCamera("scan");
+      scanner = detector;
+      scanQrFrame();
+    } catch (error) {
+      stopCamera();
+      toast(`Could not start QR scanning: ${error.message}. Enter the code manually.`, true);
+    }
+  }
+  async function scanQrFrame() {
+    if (!cameraStream || cameraMode !== "scan" || !scanner) return;
+    const video = $("#studentCamera");
+    if (video && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      try {
+        const codes = await scanner.detect(video);
+        if (codes.length && applyScannedSession(codes[0].rawValue)) return;
+      } catch (error) {
+        stopCamera();
+        toast(`QR scan failed: ${error.message}. Enter the code manually.`, true);
+        return;
+      }
+    }
+    cameraTimer = setTimeout(scanQrFrame, 250);
+  }
+  function applyScannedSession(rawValue) {
+    let payload;
+    try {
+      payload = JSON.parse(rawValue);
+    } catch {
+      toast("That QR code is not an Attendly class session.", true);
+      stopCamera();
+      return false;
+    }
+    const currentSession = payload && data.settings.sessions[payload.subjectId];
+    if (!payload || payload.app !== "attendly-demo" || !currentSession ||
+        payload.code !== currentSession.code || payload.expiresAt !== currentSession.expiresAt ||
+        Date.now() >= new Date(payload.expiresAt).getTime()) {
+      toast("QR session is invalid, changed, or expired.", true);
+      stopCamera();
+      return false;
+    }
+    $("#checkSubject").value = payload.subjectId;
+    $("#sessionCode").value = payload.code;
+    refreshQrCode("studentQr", "studentQrStatus", payload.subjectId);
+    stopCamera();
+    toast("Class QR scanned. Confirm the subject and submit attendance.");
+    return true;
+  }
+  function downloadQrCode(containerId) {
+    const container = $(`#${containerId}`);
+    const canvas = container && $("canvas", container);
+    const image = container && $("img", container);
+    const dataUrl = canvas ? canvas.toDataURL("image/png") : image && image.src;
+    if (!dataUrl) {
+      toast("No QR code is available to download. Check the session expiry or QR generator.", true);
+      return;
+    }
+    const subjectId = containerId === "studentQr" ? $("#checkSubject")?.value : $("#settingsQrSubject")?.value;
+    const link = document.createElement("a");
+    link.href = dataUrl;
+    link.download = `attendly-${subjectId || "session"}-${today()}.png`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    toast("Session QR downloaded as a PNG.");
+  }
   function handleSubmit(event) {
     event.preventDefault();
     const form = event.target;
@@ -407,7 +593,7 @@
           subjectId: fields.get("subjectId"),
           code: fields.get("code"),
           location: locationAllowed ? browserLocation : null,
-          faceConsent: $("#faceConsent").checked
+          faceConsent: false
         });
         browserLocation = null;
         render();
@@ -467,9 +653,17 @@
       }).join("") || '<tr><td colspan="6" class="empty-state">No students found.</td></tr>';
     }
   }
+  function handleChange(event) {
+    if (event.target.id === "checkSubject") {
+      refreshQrCode("studentQr", "studentQrStatus", event.target.value);
+    } else if (event.target.id === "settingsQrSubject") {
+      refreshQrCode("settingsQr", "settingsQrStatus", event.target.value);
+    }
+  }
   root.addEventListener("click", handleClick);
   root.addEventListener("submit", handleSubmit);
   root.addEventListener("input", handleInput);
+  root.addEventListener("change", handleChange);
   try {
     data = Demo.Storage.read();
     if (data.currentUser && !((data.currentUser.role === "admin") || data.students.some((student) => student.id === data.currentUser.id))) {
