@@ -12,6 +12,13 @@
     STU003: { previousName: "Kabir Patel", name: "Brijesh", previousEmail: "kabir@demo.edu", email: "brijesh@demo.edu" },
     STU004: { previousName: "Sara Khan", name: "Karishma", previousEmail: "sara@demo.edu", email: "karishma@demo.edu" }
   };
+  const CAMPUS_LOCATION = {
+    name: "NIET, Plot No. 19, Greater Noida",
+    address: "Plot No. 19, APJ Abdul Kalam Road, Knowledge Park III, Greater Noida, Uttar Pradesh 201306",
+    latitude: 28.4627631,
+    longitude: 77.4907584,
+    radiusMeters: 500
+  };
 
   function localDate(date = new Date()) {
     const offset = date.getTimezoneOffset();
@@ -64,9 +71,11 @@
       currentUser: null,
       settings: {
         threshold: 75,
-        collegeLatitude: 19.076,
-        collegeLongitude: 72.8777,
-        radiusMeters: 500,
+        collegeName: CAMPUS_LOCATION.name,
+        collegeAddress: CAMPUS_LOCATION.address,
+        collegeLatitude: CAMPUS_LOCATION.latitude,
+        collegeLongitude: CAMPUS_LOCATION.longitude,
+        radiusMeters: CAMPUS_LOCATION.radiusMeters,
         requireLocation: false,
         sessions: subjects.reduce((map, subject, index) => {
           map[subject.id] = { code: ["JAVA75", "DATA82", "MATH90"][index], expiresAt: endToday.toISOString() };
@@ -103,7 +112,19 @@
           migratedNames = true;
         }
       });
-      if (migratedNames) write(data);
+      let migratedLocation = false;
+      if (data.settings.collegeLatitude === 19.076 && data.settings.collegeLongitude === 72.8777) {
+        data.settings.collegeLatitude = CAMPUS_LOCATION.latitude;
+        data.settings.collegeLongitude = CAMPUS_LOCATION.longitude;
+        data.settings.radiusMeters = CAMPUS_LOCATION.radiusMeters;
+        migratedLocation = true;
+      }
+      if (!data.settings.collegeName || !data.settings.collegeAddress) {
+        data.settings.collegeName = CAMPUS_LOCATION.name;
+        data.settings.collegeAddress = CAMPUS_LOCATION.address;
+        migratedLocation = true;
+      }
+      if (migratedNames || migratedLocation) write(data);
       return data;
     } catch (error) {
       if (error instanceof SyntaxError) throw new Error("Saved demo data could not be read. Clear this site's storage to start a fresh demo.");
@@ -123,5 +144,5 @@
     return fresh;
   }
   window.AttendanceDemo = window.AttendanceDemo || {};
-  window.AttendanceDemo.Storage = { read, write, reset, localDate };
+  window.AttendanceDemo.Storage = { read, write, reset, localDate, campusLocation: CAMPUS_LOCATION };
 })();

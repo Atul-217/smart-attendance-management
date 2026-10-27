@@ -59,12 +59,12 @@ Then visit `http://localhost:8000`. The server only serves static files; there i
 2. Admin dashboard: inspect the roster totals, today's check-ins, attendance average, students below threshold, and any rejected attempts.
 3. Student dashboard/profile: inspect overall and subject-wise attendance, low-attendance warnings, profile, and records.
 4. Admins can display a generated QR for a configured active session in **Verification settings**. On the student **Mark attendance** page, select **Open QR scanner** and grant camera permission to scan the instructor's QR. It uses the native `BarcodeDetector` API when available and falls back to jsQR on browsers without it. Enter the visible class code (`JAVA75`, `DATA82`, or `MATH90`) manually if camera scanning is unavailable. Codes can be changed by the admin. Each student can check in once per subject/session/date; invalid codes and duplicates are recorded for review.
-5. Optional location: select the location option, choose **Check my location**, and grant permission. The check uses a configured sample campus point/radius; coordinates are not secure proof of identity or presence.
+5. Optional location: select the location option, choose **Check my location**, and grant permission. Defaults point to the mapped NIET Plot No. 19 listing (28.4627631, 77.4907584), with a 500 m radius. The map listing identifies Plot No. 19 as Knowledge Park III; confirm the intended campus entrance because the requested address said Knowledge Park II. Coordinates are not secure proof of identity or presence.
 6. **Face camera demo** asks for camera permission only after the student clicks Start. It displays a live preview only; it does not detect, recognize, or identify faces, and does not record or save video. Stop the camera when finished.
 7. Admin **Manage students**: search, add, and edit fictional student records.
 8. Admin **Manage attendance**: filter records, correct a status with a required audit note, and review audit entries and rejected attempts.
 9. Admin **Reports & export**: filter the records and download the current result set as CSV.
-10. Admin **Verification settings**: configure attendance threshold, optional location enforcement, sample campus radius/coordinates, session codes/expiry times, and share the generated session QR.
+10. Admin **Verification settings**: configure attendance threshold, optional location enforcement, NIET Plot No. 19 radius/coordinates, session codes/expiry times, and share the generated session QR.
 11. **Reset demo data** restores the original sample accounts and records after confirmation.
 12. **Java & OOP concepts** explains how the Java course units and object-oriented concepts are represented.
 13. Student dashboard **Attendance by period** shows today's, rolling 7-day, and rolling 30-day attendance percentages.
